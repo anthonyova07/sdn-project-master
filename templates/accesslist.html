@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block titulo %}Últimas Solicitudes de Acceso{% endblock %}
+
+{% block contenido %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Usuario</th>
+            <th scope="col">Fecha inicial de acceso</th>
+            <th scope="col">Fecha límite de acceso</th>
+            <th scope="col">URL a Acceder</th>
+            <th scope="col">Razón</th>
+            <th scope="col">Estatus</th>
+            <th scope="col">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for access in access_list %}
+        <tr>
+            <td>{{access.userid}}</td>
+            {% if datetime.datetime.strptime(access.initial_date, '%Y-%m-%d %H:%M:%S') < actualdate and datetime.datetime.strptime(access.limited_date, '%Y-%m-%d %H:%M:%S') > actualdate: %}
+            <td class="text-success">{{access.initial_date}}</td>
+            <td class="text-success">{{access.limited_date}}</td>
+            {% else: %}
+            <td class="text-danger">{{access.initial_date}}</td>
+            <td class="text-danger">{{access.limited_date}}</td>
+            {% endif %}
+            <td>{{access.urlaccess}}</td>
+            {% if len(access.reason) > 10 %}
+            <td href="/accesslist/{{access.userid}}" style="cursor:pointer; color:blue; text-decoration:underline;" data-toggle="modal" class="link" data-target="#reasonOutput{{ access.id }}">Ver</a></td>
+            {% else %}
+            <td>{{access.reason}}</td>
+            {% endif %}
+            {% if access.approve == 0: %}
+            <td class="text-danger">Rechazada</td>
+            {% elif access.approve == 1: %}
+            <td class="text-success">Aprobada</td>
+            {% else: %}
+            <td class="text-warning">Pendiente</td>
+            {% endif %}
+
+            <td>
+                <a class="btn btn-outline-secondary btn-sm" href="/update/{{access.id}}"><i class="fa fa-pencil"></i> Editar</a>
+                <a class="btn btn-outline-danger btn-sm" href="/rejectrequest/{{access.id}}"><i class="fa fa-trash"></i> Rechazar</a>
+                <a class="btn btn-outline-success btn-sm" href="/approverequest/{{access.id}}"><i class="fa fa-lock"></i> Aprobar</a>
+            </td>
+        </tr>
+
+ <!-- Modal -->
+<div class="modal fade" id="reasonOutput{{ access.id }}" tabindex="-1" role="dialog" aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLongTitle">Razón</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+                </div>
+                <div class="modal-body">
+        {{access.reason}}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+        {% endfor %}
+    </tbody>
+</table>
+
+<a class="btn btn-secondary" href="/create"><i class="fa fa-plus"></i> Añadir</a>
+
+{% endblock %}

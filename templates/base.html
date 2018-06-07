@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+    <head>
+        <title></title>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" >
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+        <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />        
+        <style>        
+        .container{
+                padding-top: 80px;
+            }
+
+        .navbar{
+            background-color: #3f62a3;
+        }
+
+        h1{
+            padding-bottom: 20px;
+        }
+
+
+        </style>
+
+    </head>
+    <body>
+        <nav class="navbar navbar-dark fixed-top">
+                {% if current_user.is_authenticated == False %}
+                <a class="btn btn-success" href="/login"> Loguear</a>          
+                <a class="btn btn-warning" href="/signup"> Registrarse</a>          
+                {% endif %}
+
+                {% if current_user.admin_privilege == 1 %}
+                    <a class="navbar-brand" href="/"><i class="fa fa-users"></i> Panel de Administración de Acceso</a>
+                {% endif %}
+                {% if current_user.admin_privilege == 0 %}
+                    <a class="navbar-brand" href="/"> <i class="fa fa-users"></i>  Sistema</a>
+                    <a class="btn btn-warning" href="/userpanel">Panel de Usuario</a>
+                {% endif %}
+                <a class="btn btn-dark" href="/">Ir a Inicio</a>
+                {% if current_user.admin_privilege == 1 %}
+                    <a class="btn btn-success" href="/adminpanel">Usuarios</a>
+                {% endif %}
+                {% if current_user.admin_privilege == 1 %}
+                    <a class="btn btn-warning" href="/accesslist">Solicitudes de Acceso</a>
+                {% endif %}
+                <a style="float:right" class="btn btn-danger" href="/logout"><i class="fa fa-lock"></i> Logout</a>
+        </nav>
+        <div class="container ">
+            <h3>{% block titulo %}Título{% endblock %}</h3>
+
+            {% block contenido %}Mi contenido{% endblock %}
+        </div>
+        <!-- jQuery primero, luego Popper.js, luego Bootstrap JS. El orden es importante. -->
+        <!-- <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script> -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+        
+    </body>
+    <script>
+        $(function() {           
+            $('input[name="initial_date"]').daterangepicker({
+                singleDatePicker: true,
+                timePicker: true,
+                timePicker24Hour: true,
+                timePickerIncrement: 5,                
+                locale: {
+                    format: "YYYY-MM-DD HH:mm:ss"
+                }
+            });
+            $('input[name="limited_date"]').daterangepicker({
+                singleDatePicker: true,
+                timePicker: true,
+                timePicker24Hour: true,
+                timePickerIncrement: 5,                
+                locale: {
+                    format: "YYYY-MM-DD HH:mm:ss"
+                }
+            });
+        });
+    </script>
+
+
+</html>

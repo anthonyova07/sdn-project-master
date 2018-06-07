@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block titulo %}
+Lo siento.
+{% endblock %}
+
+{% block contenido %}
+	{% if error == 1: %}
+        <p class="lead">Usted no tiene acceso a este servicio. </p>
+    {% elif error == 2: %}
+    	<p class="lead">Usted no tiene acceso a este servicio pero sí tiene una solicitud de acceso pendiente. Por favor espere la respuesta de la administración a su solicitud.  </p>
+    {% elif error == 3: %}
+    	<p class="lead">Usted no tiene acceso a este servicio. Su solicitud de acceso fue denegada, contacte con la administración si desea más información. </p>
+    {% endif %}
+{% endblock %}

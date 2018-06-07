@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block titulo %}Bienvenido, {{current_user.username}}.{% endblock %}
+
+{% block contenido %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th scope="col">Nombre</th>
+            <th scope="col">Fecha de creación</th>
+            <th scope="col">Rango</th>
+            <th scope="col">Correo</th>
+            <th scope="col">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for aUser in user_list %}
+
+        <tr>
+            <td>{{aUser.username}}</td>
+            <td>{{aUser.creation_date}}</td>
+            {% if aUser.username == "system": %}
+            <td>Sistema</td>
+            {% elif aUser.admin_privilege == 1: %}
+            <td>Administrador</td>
+            {% else: %}
+            <td>Usuario</td>
+            {% endif %}
+            <td><a href="mailto:{{aUser.email}}">{{aUser.email}}</a></td>
+            {% if aUser.username != "system": %}
+            <td>
+                <a class="btn btn-outline-secondary btn-sm" href="./userupdate/{{aUser.id}}"><i class="fa fa-pencil"></i> Editar</a>
+                <a class="btn btn-outline-danger btn-sm" href="./delete/{{aUser.id}}"><i class="fa fa-trash"></i> Eliminar</a>
+                <a class="btn btn-outline-success btn-sm" href="./activate/{{aUser.id}}"><i class="fa fa-lock"></i> Activar</a>
+                <a class="btn btn-outline-dark btn-sm" href="./deactivate/{{aUser.id}}"><i class="fa fa-lock"></i> Desactivar</a>
+            </td>
+            {% else: %}
+            <td>
+            <div>
+        Usuario sistema no puede ser alterado.
+            </div>
+            </td>
+            {% endif %}
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+<a class="btn btn-secondary" href="./signup"><i class="fa fa-plus"></i> Añadir</a>
+
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block titulo %}
+{% endblock %}
+
+{% block contenido%}
+      <form style="width: 30%;margin: auto;"class="form-signin" method="POST" action="/login">
+        <h2 class="form-signin-heading">Por favor introduzca su usuario y contraseña.</h2>
+        {{ form.hidden_tag() }}
+        {{ wtf.form_field(form.username) }}
+        {{ wtf.form_field(form.password) }}
+        {% if error == True: %}
+          <div class="text-danger">Contraseña incorrecta.</div>
+          {% endif %}
+        {{ wtf.form_field(form.remember) }}
+        <button class="btn btn-lg btn-primary btn-block" type="submit">Loguear</button>
+      </form>
+{% endblock %}

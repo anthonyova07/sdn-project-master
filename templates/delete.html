@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block titulo %}Elimina un usuario{% endblock %}
+
+{% block contenido %}
+
+¿Está seguro de querer eliminar al usuario {{user.username}} ({{user.email}})?
+<form method="post">
+    <button type="submit" class="btn btn-danger"  value="Submit">Eliminar</button>
+</form>
+{% endblock %}

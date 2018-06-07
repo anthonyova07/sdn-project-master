@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block titulo %}Bienvenido, {{user.username}}.{% endblock %}
+
+{% block contenido %}
+
+<a class="btn btn-warning" href="/switch_1"><i class="fa fa-lock"></i> Switch 1.</a>
+<a class="btn btn-success" href="/create"><i class="fa fa-lock"></i> Solicitar acceso.</a>
+{% endblock %}
