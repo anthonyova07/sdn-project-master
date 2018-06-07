@@ -48,6 +48,9 @@
                     <a class="btn btn-success" href="/adminpanel">Usuarios</a>
                 {% endif %}
                 {% if current_user.admin_privilege == 1 %}
+                    <a class="btn btn-warning" href="/services">Manejo de servicios</a>
+                {% endif %}
+                {% if current_user.admin_privilege == 1 %}
                     <a class="btn btn-warning" href="/accesslist">Solicitudes de Acceso</a>
                 {% endif %}
                 <a style="float:right" class="btn btn-danger" href="/logout"><i class="fa fa-lock"></i> Logout</a>
