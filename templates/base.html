@@ -11,7 +11,9 @@
         <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
         <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
-        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />        
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" /> 
+        <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+        <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>       
         <style>        
         .container{
                 padding-top: 80px;
@@ -87,6 +89,23 @@
                 }
             });
         });
+
+        
+        $(function() {
+            $('input[name="toggle-two-on"]').prop('checked', true).change()
+            $('input[name="toggle-two-off"]').prop('checked', false).change()
+
+            $('input[name="toggle-two-on"]').prop('disabled', true).change()
+            $('input[name="toggle-two-off"]').prop('disabled', true).change()
+        })
+                
+
+        // function toggleOnByInput() {
+        //     $('input[name="toggle-trigger"]').bootstrapToggle('on')
+        // }
+        // function toggleOffByInput() {
+        //     $('input[name="toggle-trigger"]').bootstrapToggle('off')
+        // }
     </script>
 
 
