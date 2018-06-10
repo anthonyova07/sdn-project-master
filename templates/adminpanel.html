@@ -31,9 +31,18 @@
             <td>
                 <a class="btn btn-outline-secondary btn-sm" href="./userupdate/{{aUser.id}}"><i class="fa fa-pencil"></i> Editar</a>
                 <a class="btn btn-outline-danger btn-sm" href="./delete/{{aUser.id}}"><i class="fa fa-trash"></i> Eliminar</a>
-                <a class="btn btn-outline-success btn-sm" href="./activate/{{aUser.id}}"><i class="fa fa-lock"></i> Activar</a>
-                <a class="btn btn-outline-dark btn-sm" href="./deactivate/{{aUser.id}}"><i class="fa fa-lock"></i> Desactivar</a>
-            </td>
+                <a class="btn btn-outline-success btn-sm" id="toggle-trigger-on" href="./activate/{{aUser.id}}" > <i class="fa fa-unlock"></i> Activar</a>
+                <a class="btn btn-outline-dark btn-sm" id="toggle-trigger-off" href="./deactivate/{{aUser.id}}"> <i class="fa fa-lock"></i>Desactivar</a>
+                {% if aUser.Activated == 1: %}
+                
+                <input id="toggle-two-on" name="toggle-two-on" type="checkbox" data-toggle="toggle-trigger-on" data-on=" Activado" data-off="Desactivado" data-onstyle="success" data-offstyle="danger">
+                {% else: %}
+                <input id="toggle-two-off" name="toggle-two-off" type="checkbox" data-toggle="toggle-trigger-off" data-on=" Activado" data-off="Desactivado" data-onstyle="success" data-offstyle="danger">
+                
+                {% endif %}                
+                <!-- <input id="toggle-two" name="toggle-trigger" type="checkbox" checked data-toggle="toggle" data-on=" Activado" data-off="Desactivado" data-onstyle="success" data-offstyle="danger"> -->
+                
+             </td>
             {% else: %}
             <td>
             <div>
