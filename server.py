@@ -120,9 +120,9 @@ def adminpanel():
 @login_required
 def services():
     if current_user.admin_privilege == 1:
-        access_list=query_db("SELECT * FROM access")
+        # access_list=query_db("SELECT * FROM access")
         #limited_date_object = datetime.datetime.strptime(current_user.limited_date, '%Y-%m-%d %H:%M:%S')
-        return render_template("services.html",current_user=current_user,access_list=access_list, actualdate = datetime.datetime.now(), datetime = datetime, len=len)
+        return render_template("services.html")
     else:
         return('<h1>Su actual usuario no es administrador.</h1>')
 
