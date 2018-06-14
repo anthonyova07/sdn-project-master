@@ -19,7 +19,7 @@
         {% for access in access_list %}
         <tr>
             <td>{{access.userid}}</td>
-            {% if datetime.datetime.strptime(access.initial_date, '%Y-%m-%d %H:%M:%S') < actualdate and datetime.datetime.strptime(access.limited_date, '%Y-%m-%d %H:%M:%S') > actualdate: %}
+            {% if datetime.datetime.strptime(access.initial_date, '%Y-%m-%d %H:%M:%S') > actualdate and datetime.datetime.strptime(access.limited_date, '%Y-%m-%d %H:%M:%S') > actualdate: %}
             <td class="text-success">{{access.initial_date}}</td>
             <td class="text-success">{{access.limited_date}}</td>
             {% else: %}

@@ -15,7 +15,6 @@ import time, datetime
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-# from email.MIMEText import MIMEText
 from flask_datepicker import datepicker
 
 
@@ -146,7 +145,7 @@ def create():
 
         ############ ENVIO DE CORREO ###################################################
 
-        fromaddr = "anthonyovalles@gmail.com"
+        fromaddr = "iamtheadmin@root.com"
         toaddr = "anthonyovalles@gmail.com"
         msg = MIMEMultipart()
         msg['From'] = fromaddr
@@ -158,7 +157,7 @@ def create():
         
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
-        server.login(fromaddr, "bayovanex0705")
+        server.login(toaddr, "bayovanex0705")
         text = msg.as_string()
         server.sendmail(fromaddr, toaddr, text)
         server.quit()
