@@ -12,7 +12,12 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, g
 import sqlite3
 import time, datetime
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+# from email.MIMEText import MIMEText
 from flask_datepicker import datepicker
+
 
 app = Flask(__name__)
 
@@ -106,6 +111,7 @@ def close_connection(exception):
 def index():
     return render_template('index.html')
 
+
 @app.route('/adminpanel')
 @login_required
 def adminpanel():
@@ -137,6 +143,28 @@ def create():
         access=request.form.to_dict()
         values=[current_user.username,access["urlaccess"],access["initial_date"],access["limited_date"],access["reason"]]
         change_db("INSERT INTO access (userid,urlaccess,initial_date,limited_date,reason) VALUES (?,?,?,?,?)",values)
+
+        ############ ENVIO DE CORREO ###################################################
+
+        fromaddr = "anthonyovalles@gmail.com"
+        toaddr = "anthonyovalles@gmail.com"
+        msg = MIMEMultipart()
+        msg['From'] = fromaddr
+        msg['To'] = toaddr
+        msg['Subject'] = "Solicitud de acceso a servicio via SDN"
+        
+        body = "El usuario: @@@@ , solicito el acceso para: Acceder al switch desde el 2018/06/13 XX:XX:XX hasta el 2018/06/13 XX:XX:XX "
+        msg.attach(MIMEText(body, 'plain'))
+        
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(fromaddr, "bayovanex0705")
+        text = msg.as_string()
+        server.sendmail(fromaddr, toaddr, text)
+        server.quit()
+        ###############################################################################
+
+
 
         # user=request.form.to_dict()
         # values_user=[current_user.username,user["limited_date"]]
