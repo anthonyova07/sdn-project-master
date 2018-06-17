@@ -53,6 +53,16 @@ class User(UserMixin, db.Model):
     creation_date = db.Column(db.String(120))
     admin_privilege = db.Column(db.Integer)
 
+    class SecurityPolicy():
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120), not_null=True)
+    publisher = db.Column(db.String(120), not_null=True)
+    description = db.Column(db.String(120))
+    category = db.Column(db.String(40))
+    url = db.Column(db.String(100))
+    port = db.Column(db.String(6))
+    created_on = db.Column(db.String(20))
+
 #class User(UserMixin, db.Model):
 #    id = db.Column(db.Integer, primary_key=True)
 #    userid = db.Column(db.Integer)
@@ -76,6 +86,15 @@ class RegisterForm(FlaskForm):
     username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
     password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
 ##########/
+
+class SecurityPolicyForm():
+    name = StringField('name', validators=[InputRequired(), Length(max=120)])
+    publisher = StringField('publisher', validators=[InputRequired(), Length(max=120)])
+    description = StringField('description', validators=[InputRequired(), Length(max=120)])
+    category = StringField('category', validators=[InputRequired(), Length(max=40)])
+    url = StringField('url', validators=[InputRequired(), Length(max=100)])
+    port = StringField('port', validators=[InputRequired(), Length(max=6)])
+
 
 DATABASE = "database.db"
 
@@ -118,6 +137,28 @@ def adminpanel():
         user_list=query_db("SELECT * FROM user")
         #limited_date_object = datetime.datetime.strptime(current_user.limited_date, '%Y-%m-%d %H:%M:%S')
         return render_template("adminpanel.html",current_user=current_user,user_list=user_list, actualdate = datetime.datetime.now(), datetime = datetime)
+    else:
+        return('<h1>Su actual usuario no es administrador.</h1>')
+
+@app.route('/policiesform', methods=['GET', 'POST'])
+@login_required
+def policiesform():
+
+    form = SecurityPolicyForm()
+
+    if current_user.admin_privilege == 1 and request.method == "GET":
+        return render_template("policiesform.html", SecurityPolicy=None)
+    elif current_user.admin_privilege == 1 and request.method == "POST":
+        new_securityPolicy = SecurityPolicy(name = form.name.data.title()
+            , publisher = form.publisher.data.title()
+            , description = form.description.data
+            , category = form.category.data.title()
+            , url = form.url.data.lower()
+            , port = form.port.data
+            , created_on = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            , created_by = current_user.username)
+        db.session.add(new_securityPolicy)
+        db.session.commit()
     else:
         return('<h1>Su actual usuario no es administrador.</h1>')
 

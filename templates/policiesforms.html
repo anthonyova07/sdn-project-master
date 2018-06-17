@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block titulo %}{% endblock %}
+
+{% block contenido %}
+<form action="" method="POST">
+    <!--Nombre-->
+    <div class="form-group row">
+        <label for="name" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <input id="name" type="text" placeholder="Nombre Aplicacion/Sitio Web/Recurso" class="form-control" value={{SecurityPolicy.name}}>
+        </div>
+    </div>
+    <!--Fabricante-->
+    <div class="form-group row">
+        <label for="publisher" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <input id="publisher" type="text" placeholder="Fabricante/Organizacion" class="form-control" value={{SecurityPolicy.publisher}}>
+        </div>
+    </div>
+    <!--Descripcion-->
+    <div class="form-group row">
+        <label for="description" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <input id="description" type="text" placeholder="Breve Descripcion" class="form-control" value={{SecurityPolicy.description}}>
+        </div>
+    </div>
+    <!--Categoria-->
+    <div class="form-group row">
+        <label for="category" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <input id="category" type="text" placeholder="Categoria" class="form-control" value={{SecurityPolicy.category}}>
+        </div>
+    </div>
+    <!--URL-->
+    <div class="form-group row">
+        <label for="url" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <input id="url" type="text" placeholder="URL" class="form-control" value={{SecurityPolicy.url}}>
+        </div>
+    </div>
+    <!--PORT-->
+    <div class="form-group row">
+        <label for="port" class="col-sm-2 col-form-label"></label>
+        <div class="col-sm-10">
+            <input id="port" type="text" placeholder="Puerto" class="form-control" value={{SecurityPolicy.port}}>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-secondary" value="Submit">Guardar</button>
+</form>
+
+{% endblock %}
