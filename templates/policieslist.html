@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block titulo %}Bienvenido, {{current_user.username}}.{% endblock %}
+
+{% block contenido %}
+    <a class="btn btn-default" href="/policiesform">Nueva Politica</a>
+    <table class="table">
+        <thead>
+            <tr>
+                <th scope="col">Nombre</th>
+                <th scope="col">Fabricante</th>
+                <th scope="col">Categoria</th>
+                <th scope="col">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for onePolicy in policies_list %}
+                <tr>
+                    <td>{{ onePolicy.name }}</td>
+                    <td>{{ onePolicy.publisher }}</td>
+                    <td>{{ onePolicy.category }}</td>
+                    <td>
+                        <a class="btn btn-outline-secondary btn-sm" href="./policyupdate/{{onePolicy.id}}">Editar</a>
+                        <a class="btn btn-outline-secondary btn-sm" href="./policydelete/{{onePolicy.id}}">Eliminar</a>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %} 

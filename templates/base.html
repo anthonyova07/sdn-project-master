@@ -8,9 +8,11 @@
         <!-- Bootstrap CSS -->
         <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
         <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" >
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
         <script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>
         <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
         <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">        
         <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" /> 
         <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
         <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>         
@@ -34,25 +36,28 @@
     <body>
         <nav class="navbar navbar-dark fixed-top">
                 {% if current_user.is_authenticated == False %}
-                <a class="btn btn-success" href="/login"> Loguear</a>          
-                <a class="btn btn-warning" href="/signup"> Registrarse</a>          
+                    <a class="btn btn-dark" href="/">Ir a Inicio</a>   
+                    <a style="float:right" class="btn btn-success" href="/login"> Iniciar Sesion</a>          
+                    <a style="float:right" class="btn btn-warning" href="/signup"> Registro</a>            
                 {% endif %}
 
                 {% if current_user.admin_privilege == 1 %}
                     <a class="navbar-brand" href="/"><i class="fa fa-users"></i> Panel de Administración de Acceso</a>
-                {% endif %}
-                {% if current_user.admin_privilege == 0 %}
-                    <a class="navbar-brand" href="/"> <i class="fa fa-users"></i>  Sistema</a>
-                    <a class="btn btn-warning" href="/userpanel">Panel de Usuario</a>
-                {% endif %}
-                <a class="btn btn-dark" href="/">Ir a Inicio</a>
-                {% if current_user.admin_privilege == 1 %}
                     <a class="btn btn-success" href="/adminpanel">Usuarios</a>
-                {% endif %}
-                {% if current_user.admin_privilege == 1 %}
                     <a class="btn btn-warning" href="/accesslist">Solicitudes de Acceso</a>
+                    <a class="btn btn-success" href="/policieslist">Politicas de Acceso</a>
                 {% endif %}
-                <a style="float:right" class="btn btn-danger" href="/logout"><i class="fa fa-lock"></i> Logout</a>
+
+                {% if current_user.admin_privilege == 0 %}                
+                    <a class="navbar-brand" href="/"> <i class="fa fa-users"></i> Sistema de Solicitudes de Acceso</a>
+                    <a style="float:left" class="btn btn-warning" href="/userpanel">Panel de Usuario</a>
+                    
+                {% endif %}
+
+                {% if current_user.is_authenticated == True %}
+                    <a style="float:right" class="btn btn-danger" href="/logout"><i class="fa fa-lock"></i> Cerrar Sesion</a>
+                {% endif %}
+                
         </nav>
         <div class="container ">
             <h3>{% block titulo %}Título{% endblock %}</h3>
@@ -85,6 +90,7 @@
                     format: "YYYY-MM-DD HH:mm:ss"
                 }
             });
+            $("#urlaccess").autocomplete({});
         });
 
         $(function() {

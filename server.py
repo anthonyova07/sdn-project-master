@@ -1,22 +1,23 @@
 #!/usr/bin/env python
 
-from flask import Flask, render_template, request, redirect, url_for, g
+from flask import Flask, render_template, request, redirect, url_for, g, flash
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, BooleanField, DateField
+from wtforms import StringField, PasswordField, BooleanField, DateField, SubmitField
 from wtforms.validators import InputRequired, Email, Length
 from flask_sqlalchemy  import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 import os
-from flask import Flask, render_template, request, redirect, url_for, g
+from flask import Flask, render_template, request, redirect, url_for, g, flash, Response
 import sqlite3
-import time, datetime
+import time, datetime, json
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from flask_datepicker import datepicker
 
+import sys
 
 app = Flask(__name__)
 
@@ -53,15 +54,16 @@ class User(UserMixin, db.Model):
     creation_date = db.Column(db.String(120))
     admin_privilege = db.Column(db.Integer)
 
-    class SecurityPolicy():
+class SecurityPolicy():
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120), not_null=True)
-    publisher = db.Column(db.String(120), not_null=True)
+    name = db.Column(db.String(120))
+    publisher = db.Column(db.String(120))
     description = db.Column(db.String(120))
     category = db.Column(db.String(40))
     url = db.Column(db.String(100))
     port = db.Column(db.String(6))
     created_on = db.Column(db.String(20))
+    created_by = db.Column(db.String(40))
 
 #class User(UserMixin, db.Model):
 #    id = db.Column(db.Integer, primary_key=True)
@@ -87,13 +89,14 @@ class RegisterForm(FlaskForm):
     password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
 ##########/
 
-class SecurityPolicyForm():
-    name = StringField('name', validators=[InputRequired(), Length(max=120)])
-    publisher = StringField('publisher', validators=[InputRequired(), Length(max=120)])
-    description = StringField('description', validators=[InputRequired(), Length(max=120)])
-    category = StringField('category', validators=[InputRequired(), Length(max=40)])
-    url = StringField('url', validators=[InputRequired(), Length(max=100)])
-    port = StringField('port', validators=[InputRequired(), Length(max=6)])
+class SecurityPolicyForm(FlaskForm):
+    name = StringField('Nombre', validators=[InputRequired("Ingrese un Nombre"), Length(max=100)])
+    publisher = StringField('publisher', validators=[InputRequired("Ingrese un Fabricante"), Length(max=100)])
+    description = StringField('description', validators=[InputRequired("Ingrese un Descripcion"), Length(max=120)])
+    category = StringField('category', validators=[InputRequired("Ingrese un Categoria"), Length(max=40)])
+    url = StringField('url', validators=[InputRequired("Ingrese un URL"), Length(max=100)])
+    port = StringField('port', validators=[InputRequired("Ingrese un Puerto"), Length(max=6)])
+    submit = SubmitField('Guardar')
 
 
 DATABASE = "database.db"
@@ -140,15 +143,31 @@ def adminpanel():
     else:
         return('<h1>Su actual usuario no es administrador.</h1>')
 
+@app.route('/policyautocomplete', methods=['GET'])
+def policyautocomplete():
+    search = request.args.get('qry')
+    policies_list =  query_db("SELECT name FROM security_policy")
+    return Response(json.dumps(policies_list), mimetype='application/json')
+
+@app.route('/policieslist', methods=['GET', 'POST'])
+@login_required
+def policieslist():
+    policies_list =  query_db("SELECT * FROM security_policy")
+    return render_template("policieslist.html"
+        , current_user = current_user
+        , policies_list = policies_list)
+
+
+
 @app.route('/policiesform', methods=['GET', 'POST'])
 @login_required
 def policiesform():
 
     form = SecurityPolicyForm()
 
-    if current_user.admin_privilege == 1 and request.method == "GET":
-        return render_template("policiesform.html", SecurityPolicy=None)
-    elif current_user.admin_privilege == 1 and request.method == "POST":
+    if request.method == "GET":
+        return render_template("policiesform.html", form=form)
+    elif request.method == "POST":    
         new_securityPolicy = SecurityPolicy(name = form.name.data.title()
             , publisher = form.publisher.data.title()
             , description = form.description.data
@@ -159,8 +178,35 @@ def policiesform():
             , created_by = current_user.username)
         db.session.add(new_securityPolicy)
         db.session.commit()
+        return redirect(url_for("policieslist"))
     else:
         return('<h1>Su actual usuario no es administrador.</h1>')
+
+@app.route('/policyupdate/<int:id>', methods=['GET', 'POST'])
+@login_required
+def policyupdate(id):
+    
+    policy = SecurityPolicyForm()
+
+    if request.method == "GET":
+        policy = query_db("SELECT * FROM security_policy WHERE id=?", [id], one=True)
+        return render_template("policyupdate.html", policy=policy)
+    elif request.method == "POST":
+        values = [policy.name.data.title() , policy.publisher.data.title(), policy.description.data, policy.category.data.title(), policy.url.data.lower(), policy.port.data, id]
+        change_db("UPDATE security_policy SET name=?, publisher=?, description=?, category=?, url=?, port=? WHERE id=?", values)
+        return redirect(url_for("policieslist"))
+
+@app.route('/policydelete/<int:id>', methods=['GET', 'POST'])
+@login_required
+def policydelete(id):
+    policy = SecurityPolicyForm()
+
+    if request.method == "GET":
+        policy = query_db("SELECT * FROM security_policy WHERE id=?", [id], one=True)
+        return render_template("policydelete.html", policy=policy)
+    elif request.method == "POST":
+        change_db("DELETE FROM security_policy WHERE id = ?",[id])
+        return redirect(url_for("policieslist"))
 
 @app.route('/accesslist')
 @login_required

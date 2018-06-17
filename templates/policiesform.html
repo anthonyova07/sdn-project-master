@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block titulo %}Nueva Politica de Acceso{% endblock %}
+
+{% block contenido %}
+<form action="" method="POST">
+    <!--Nombre-->
+    <div class="form-group row">
+        <label for="name" class="col-sm-2 col-form-label">Nombre</label>
+        <div class="col-sm-10">
+            <input id="name" name="name" type="text" placeholder="Nombre Aplicacion/Sitio Web/Recurso" class="form-control" value={{name}}>
+        </div>
+    </div>
+    <!--Fabricante-->
+    <div class="form-group row">
+        <label for="publisher" class="col-sm-2 col-form-label">Fabricante</label>
+        <div class="col-sm-10">
+            <input id="publisher" name="publisher" type="text" placeholder="Fabricante/Organizacion" class="form-control" value={{publisher}}>
+        </div>
+    </div>
+    <!--Descripcion-->
+    <div class="form-group row">
+        <label for="description" class="col-sm-2 col-form-label">Descripcion</label>
+        <div class="col-sm-10">
+            <input id="description" name="description" type="text" placeholder="Breve Descripcion" class="form-control" value={{description}}>
+        </div>
+    </div>
+    <!--Categoria-->
+    <div class="form-group row">
+        <label for="category" class="col-sm-2 col-form-label">Categoria</label>
+        <div class="col-sm-10">
+            <input id="category" name="category" type="text" placeholder="Categoria" class="form-control" value={{category}}>
+        </div>
+    </div>
+    <!--URL-->
+    <div class="form-group row">
+        <label for="url" class="col-sm-2 col-form-label">URL</label>
+        <div class="col-sm-10">
+            <input id="url" name="url" type="text" placeholder="URL" class="form-control" value={{url}}>
+        </div>
+    </div>
+    <!--PORT-->
+    <div class="form-group row">
+        <label for="port" class="col-sm-2 col-form-label">Puerto</label>
+        <div class="col-sm-10">
+            <input id="port" name="port" type="text" placeholder="Puerto" class="form-control" value={{port}}>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-secondary" value="Submit">Guardar</button>
+    <a class="btn btn-secondary" value="Back" href="/policieslist">Regresar</a>
+</form>
+
+{% endblock %}
