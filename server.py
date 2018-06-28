@@ -21,7 +21,7 @@ from email.mime.text import MIMEText
 from flask_datepicker import datepicker
 
 import sys
-
+# Envio de ordenes al objeto del controlador
 class ServerSentEvent(object):
 
     def __init__(self, data):
