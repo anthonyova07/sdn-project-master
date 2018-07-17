@@ -241,7 +241,7 @@ def accesslist():
         return render_template("accesslist.html",current_user=current_user,access_list=access_list, actualdate = datetime.datetime.now(), datetime = datetime, len=len)
     else:
         return('<h1>Su actual usuario no es administrador.</h1>')
-
+#################################################################################
 @app.route('/create', methods=['GET', 'POST'])
 @login_required
 def create():
@@ -284,7 +284,7 @@ def create():
             return redirect(url_for("accesslist"))
         else:
             return redirect(url_for("requestdone"))
-
+####################################################################################
 @app.route('/requestdone', methods=['GET', 'POST'])
 @login_required
 def requestdone():
@@ -356,7 +356,7 @@ def activate(id):
 def deactivate(id):
         change_db("UPDATE user SET Activated=0 WHERE ID=?",[id])
         return redirect(url_for("adminpanel"))
-
+#################################################################################
 @app.route('/approverequest/<int:id>')
 def approverequest(id):
         change_db("UPDATE access SET approve=1 WHERE ID=?",[id])
@@ -366,7 +366,7 @@ def approverequest(id):
 def rejectrequest(id):
         change_db("UPDATE access SET approve=0 WHERE ID=?",[id])
         return redirect(url_for("accesslist"))
-
+#################################################################################
 @app.route('/addtime/<int:id>')
 def addtime(id):
         now = datetime.datetime.now()
@@ -456,4 +456,4 @@ def logout():
     return redirect(url_for('index'))
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='127.0.0.1', port=8000)
