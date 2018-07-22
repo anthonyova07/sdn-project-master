@@ -13,6 +13,7 @@ from ryu.lib.packet import ether_types
 from ryu.lib.packet import arp
 
 _ipaddr='http://127.0.0.1:'
+_ipaddr_port=8080
 LOG = logging.getLogger('DynamicAccess')
 LOG.setLevel(logging.INFO)
 logging.basicConfig()
