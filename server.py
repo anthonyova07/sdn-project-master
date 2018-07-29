@@ -21,7 +21,7 @@ from flask_datepicker import datepicker
 import sys
 
 
-class ServerSentEvent(object):
+# class ServerSentEvent(object):
 
     # def __init__(self, data):
     #     self.data = data
@@ -252,14 +252,14 @@ def commitaccessrequest():
         endDate = datetime.datetime.strptime( select["end_date"], '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M:%S')
         securityPolicy = select['policy_select']
         securityPolicyObj = query_db("SELECT * FROM security_policy WHERE name LIKE ?", [securityPolicy], one=True)
-         values = [current_user.username
+        values = [current_user.username
             , securityPolicyObj['url']
             , endDate
             , select['reason']
             , fromDate
             , endDate
         ]
-         change_db("INSERT INTO access (userid, urlaccess, limited_date, reason, from_date, end_date) VALUES (?,?,?,?,?,?)",values)
+        change_db("INSERT INTO access (userid, urlaccess, limited_date, reason, from_date, end_date) VALUES (?,?,?,?,?,?)",values)
         
         if current_user.admin_privilege == 1:
             return redirect(url_for("accesslist"))
@@ -283,12 +283,12 @@ def todayaccesslist():
     today = datetime.datetime.now()
     
     tomorrow = datetime.datetime(today.year, today.month, today.day + 1)
-     current_date = today.strftime('%Y-%m-%d %H:%M:%S')
-     tomorrow_date = tomorrow.strftime('%Y-%m-%d %H:%M:%S')
-     access_list = query_db("SELECT * FROM access WHERE approve == 1 AND from_date >= ? AND from_date <= ?", [current_date], [tomorrow_date])
-     if len(access_list) > 0:
+    current_date = today.strftime('%Y-%m-%d %H:%M:%S')
+    tomorrow_date = tomorrow.strftime('%Y-%m-%d %H:%M:%S')
+    access_list = query_db("SELECT * FROM access WHERE approve == 1 AND from_date >= ? AND from_date <= ?", [current_date], [tomorrow_date])
+    if len(access_list) > 0:
         responseData = []
-         for objAccess in access_list:
+        for objAccess in access_list:
             values = {'username' : objAccess['userid']
                 , 'url_port' : objAccess['urlaccess']
                 , 'limited_date' : objAccess['limited_date']
@@ -298,18 +298,18 @@ def todayaccesslist():
             }
             responseData.append(values)
         jsReponse = json.dumps(responseData)
-         resp = Response(jsReponse, status = 200, mimetype = 'application/json')
-         return (resp)
+        resp = Response(jsReponse, status = 200, mimetype = 'application/json')
+        return (resp)
     else:
         jsReponse = json.dumps('None')
         resp = Response(jsReponse, status = 404, mimetype = 'application/json')
-         return (resp)    
- @app.route('/allaccesslist', methods = ['GET'])
+        return (resp)    
+@app.route('/allaccesslist', methods = ['GET'])
 def allaccesslist():    
     access_list = query_db("SELECT * FROM access WHERE approve == 1")
     if len(access_list) > 0:
         responseData = []
-         for objAccess in access_list:
+        for objAccess in access_list:
             values = {'username' : objAccess['userid']
                 , 'url_port' : objAccess['urlaccess']
                 , 'limited_date' : objAccess['limited_date']
