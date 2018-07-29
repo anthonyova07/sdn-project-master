@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from flask import Flask, render_template, request, redirect, url_for, g, flash
+from flask import Flask, render_template, request, redirect, url_for, g, flash, Response
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, DateField, SubmitField
@@ -9,7 +9,6 @@ from flask_sqlalchemy  import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 import os
-from flask import Flask, render_template, request, redirect, url_for, g, flash, Response
 import sqlite3
 import gevent
 from gevent.wsgi import WSGIServer
@@ -24,23 +23,23 @@ import sys
 
 class ServerSentEvent(object):
 
-    def __init__(self, data):
-        self.data = data
-        self.event = None
-        self.id = None
-        self.desc_map = {
-            self.data : "data",
-            self.event : "event",
-            self.id : "id"
-        }
+    # def __init__(self, data):
+    #     self.data = data
+    #     self.event = None
+    #     self.id = None
+    #     self.desc_map = {
+    #         self.data : "data",
+    #         self.event : "event",
+    #         self.id : "id"
+    #     }
 
-    def encode(self):
-        if not self.data:
-            return ""
-        lines = ["%s: %s" % (v, k) 
-                 for k, v in self.desc_map.iteritems() if k]
+    # def encode(self):
+    #     if not self.data:
+    #         return ""
+    #     lines = ["%s: %s" % (v, k) 
+    #              for k, v in self.desc_map.iteritems() if k]
         
-        return "%s\n\n" % "\n".join(lines)
+    #     return "%s\n\n" % "\n".join(lines)
 
 app = Flask(__name__)
 
@@ -77,7 +76,7 @@ class User(UserMixin, db.Model):
     creation_date = db.Column(db.String(120))
     admin_privilege = db.Column(db.Integer)
 
-class SecurityPolicy():
+class SecurityPolicy(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120))
     publisher = db.Column(db.String(120))
@@ -211,13 +210,15 @@ def policyupdate(id):
     
     policy = SecurityPolicyForm()
 
-    if request.method == "GET":
+    if request.method == "GET" and current_user.admin_privilege == 1:
         policy = query_db("SELECT * FROM security_policy WHERE id=?", [id], one=True)
         return render_template("policyupdate.html", policy=policy)
-    elif request.method == "POST":
+    elif request.method == "POST" and current_user.admin_privilege == 1:
         values = [policy.name.data.title() , policy.publisher.data.title(), policy.description.data, policy.category.data.title(), policy.url.data.lower(), policy.port.data, id]
         change_db("UPDATE security_policy SET name=?, publisher=?, description=?, category=?, url=?, port=? WHERE id=?", values)
         return redirect(url_for("policieslist"))
+    else:
+        return('<h1>Su actual usuario no es administrador.</h1>')
 
 @app.route('/policydelete/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -230,6 +231,42 @@ def policydelete(id):
     elif request.method == "POST":
         change_db("DELETE FROM security_policy WHERE id = ?",[id])
         return redirect(url_for("policieslist"))
+    else:
+        return('<h1>Su actual usuario no es administrador.</h1>')
+
+@app.route('/newaccessrequest')
+@login_required
+def newaccessrequest():
+    return render_template(
+        'newaccessrequest.html',
+        data = query_db("SELECT * FROM security_policy"),
+        access = None
+    )
+
+@app.route('/commitaccessrequest', methods=["GET", "POST"])
+@login_required
+def commitaccessrequest():
+    if request.method == "POST":
+        select = request.form.to_dict()
+        fromDate = datetime.datetime.strptime( select["from_date"], '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M:%S')
+        endDate = datetime.datetime.strptime( select["end_date"], '%Y-%m-%d %H:%M').strftime('%Y-%m-%d %H:%M:%S')
+        securityPolicy = select['policy_select']
+        securityPolicyObj = query_db("SELECT * FROM security_policy WHERE name LIKE ?", [securityPolicy], one=True)
+         values = [current_user.username
+            , securityPolicyObj['url']
+            , endDate
+            , select['reason']
+            , fromDate
+            , endDate
+        ]
+         change_db("INSERT INTO access (userid, urlaccess, limited_date, reason, from_date, end_date) VALUES (?,?,?,?,?,?)",values)
+        
+        if current_user.admin_privilege == 1:
+            return redirect(url_for("accesslist"))
+        else:
+            #return redirect(url_for("requestdone"))
+            return (fromDate)
+
 
 @app.route('/accesslist')
 @login_required
@@ -241,12 +278,62 @@ def accesslist():
     else:
         return('<h1>Su actual usuario no es administrador.</h1>')
 
+@app.route('/todayaccesslist', methods = ['GET'])
+def todayaccesslist():
+    today = datetime.datetime.now()
+    
+    tomorrow = datetime.datetime(today.year, today.month, today.day + 1)
+     current_date = today.strftime('%Y-%m-%d %H:%M:%S')
+     tomorrow_date = tomorrow.strftime('%Y-%m-%d %H:%M:%S')
+     access_list = query_db("SELECT * FROM access WHERE approve == 1 AND from_date >= ? AND from_date <= ?", [current_date], [tomorrow_date])
+     if len(access_list) > 0:
+        responseData = []
+         for objAccess in access_list:
+            values = {'username' : objAccess['userid']
+                , 'url_port' : objAccess['urlaccess']
+                , 'limited_date' : objAccess['limited_date']
+                , 'reason' : objAccess['reason']
+                , 'from_date' : objAccess['from_date']
+                , 'end_date' : objAccess['end_date']
+            }
+            responseData.append(values)
+        jsReponse = json.dumps(responseData)
+         resp = Response(jsReponse, status = 200, mimetype = 'application/json')
+         return (resp)
+    else:
+        jsReponse = json.dumps('None')
+        resp = Response(jsReponse, status = 404, mimetype = 'application/json')
+         return (resp)    
+ @app.route('/allaccesslist', methods = ['GET'])
+def allaccesslist():    
+    access_list = query_db("SELECT * FROM access WHERE approve == 1")
+    if len(access_list) > 0:
+        responseData = []
+         for objAccess in access_list:
+            values = {'username' : objAccess['userid']
+                , 'url_port' : objAccess['urlaccess']
+                , 'limited_date' : objAccess['limited_date']
+                , 'reason' : objAccess['reason']
+                , 'from_date' : objAccess['from_date']
+                , 'end_date' : objAccess['end_date']
+            }
+            responseData.append(values)
+        
+        jsReponse = json.dumps(responseData)
+        resp = Response(jsReponse, status = 200, mimetype = 'application/json')
+        return (resp)
+    else:
+        jsReponse = json.dumps('None')
+        resp = Response(jsReponse, status = 404, mimetype = 'application/json')
+        return (resp)  
+
+
 @app.route('/create', methods=['GET', 'POST'])
 @login_required
 def create():
 
     if request.method == "GET":
-        return render_template("create.html",access=None)
+        return render_template("create.html", data = query_db("SELECT * FROM security_policy"), access=None)
 
     if request.method == "POST":
         access=request.form.to_dict()
@@ -358,8 +445,41 @@ def deactivate(id):
 
 @app.route('/approverequest/<int:id>')
 def approverequest(id):
-        change_db("UPDATE access SET approve=1 WHERE ID=?",[id])
-        return redirect(url_for("accesslist"))
+        # UPDATE para Aprobacion de Solicitud
+    change_db("UPDATE access SET approve=1 WHERE ID=?",[id])
+     # Proceso de Notificacion de Controlador
+    # Definicion de Headers
+    headers = {'Content-type': 'application/json'}
+    # Solicitud a Enviar al Controlador
+    access_list = query_db("SELECT * FROM access WHERE WHERE ID=?", [id])
+    
+    ########TODO Configuracion de Servidor Controller
+    ########Incluir un CRU (Create, Read and Update)
+    ctrlServerName = 'maincontroller'
+     # Variable Auxiliar del DATA del Objeto JSON
+    responseData = []
+    
+    for objAccess in access_list:
+        values = {'username' : objAccess['userid']
+            , 'url_port' : objAccess['urlaccess']
+            , 'limited_date' : objAccess['limited_date']
+            , 'output_port' : '8080' #ctrlServerName['output_port']
+            , 'from_date' : objAccess['from_date']
+            , 'end_date' : objAccess['end_date']
+        }
+        responseData.append(values)
+    
+    # Formato JSON
+    jsReponse = json.dumps(responseData)
+    
+    # URL de Notificacion al Controlador
+    sdnController = 'http://'+ ctrlServerName +':6633/serverconfig'
+     # Respuesta de Hacer POST
+    response = request.post(sdnController, data=jsReponse, headers=headers)
+     # Imprimir Respuesta
+    print (response)
+     # De Regreso a DASHBOARD
+    return redirect(url_for("accesslist"))
 
 @app.route('/rejectrequest/<int:id>')
 def rejectrequest(id):
