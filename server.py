@@ -451,9 +451,9 @@ def approverequest(id):
     # Definicion de Headers
     headers = {'Content-type': 'application/json'}
     # Solicitud a Enviar al Controlador
-    access_list = query_db("SELECT * FROM access WHERE WHERE ID=?", [id])
+    access_list = query_db("SELECT * FROM access WHERE ID=?", [id])
     
-    ########TODO Configuracion de Servidor Controller
+    ########TODOo Configuracion de Servidor Controller
     ########Incluir un CRU (Create, Read and Update)
     ctrlServerName = 'maincontroller'
      # Variable Auxiliar del DATA del Objeto JSON
@@ -462,10 +462,9 @@ def approverequest(id):
     for objAccess in access_list:
         values = {'username' : objAccess['userid']
             , 'url_port' : objAccess['urlaccess']
-            , 'limited_date' : objAccess['limited_date']
             , 'output_port' : '8080' #ctrlServerName['output_port']
-            , 'from_date' : objAccess['from_date']
-            , 'end_date' : objAccess['end_date']
+            , 'initial_date' : objAccess['initial_date']
+            , 'limited_date' : objAccess['limited_date']
         }
         responseData.append(values)
     
@@ -473,13 +472,14 @@ def approverequest(id):
     jsReponse = json.dumps(responseData)
     
     # URL de Notificacion al Controlador
-    sdnController = 'http://'+ ctrlServerName +':6633/serverconfig'
+    sdnController = 'http://'+ ctrlServerName['server_ip'] +':6633/serverconfig'
      # Respuesta de Hacer POST
     response = request.post(sdnController, data=jsReponse, headers=headers)
-     # Imprimir Respuesta
+    #  # Imprimir Respuesta
     print (response)
      # De Regreso a DASHBOARD
     return redirect(url_for("accesslist"))
+    
 
 @app.route('/rejectrequest/<int:id>')
 def rejectrequest(id):
