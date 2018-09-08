@@ -9,10 +9,9 @@ from flask_sqlalchemy  import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 import os
-import requests
 import sqlite3
 import gevent
-from gevent.pywsgi import WSGIServer
+from gevent.wsgi import WSGIServer
 from gevent.queue import Queue
 import time, datetime, json
 import smtplib
@@ -43,9 +42,6 @@ import sys
     #     return "%s\n\n" % "\n".join(lines)
 
 app = Flask(__name__)
-
-
-sdnController="10.0.1.8"
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 file_path = os.path.abspath(os.getcwd())+"/database.db"
@@ -91,13 +87,6 @@ class SecurityPolicy(db.Model):
     created_on = db.Column(db.String(20))
     created_by = db.Column(db.String(40))
 
-class ControllerConfig(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(80))
-    server_ip = db.Column(db.String(80))
-    output_port = db.Column(db.String(10))
-    default_port = db.Column(db.String(10))
-
 #class User(UserMixin, db.Model):
 #    id = db.Column(db.Integer, primary_key=True)
 #    userid = db.Column(db.Integer)
@@ -131,12 +120,6 @@ class SecurityPolicyForm(FlaskForm):
     port = StringField('port', validators=[InputRequired("Ingrese un Puerto"), Length(max=6)])
     submit = SubmitField('Guardar')
 
-class ControllerConfigForm(FlaskForm):
-    name = StringField('Nombre Controlador', validators=[InputRequired("Ingrese un Nombre"), Length(max=80)])
-    server_ip = StringField('Direccion Controller', validators=[InputRequired("Ingrese una Direccion"), Length(max=50)])
-    output_port = StringField('Puerto Salida', validators=[InputRequired("Ingrese un Puerto Salida"), Length(max=10)])
-    default_port = StringField('Puerto Por Defecto', validators=[InputRequired("Ingrese un Puerto Por Defecto"), Length(max=10)])
-    submit = SubmitField('Guardar')
 
 DATABASE = "database.db"
 
@@ -283,18 +266,6 @@ def commitaccessrequest():
         else:
             #return redirect(url_for("requestdone"))
             return (fromDate)
-############################################################################
-# @app.route('/createuser')
-# @login_manager
-# def createuser():
-#     if try:
-#         current_user.admin_privilege == 1:
-#         accest_list= query ("SELECT * from users")
-#         return render_template("createuser.html", current_user=current_user, access_list=acces_list, actual_date= datetime.datetime.now)
-#         pass
-#     except expression as identifier:
-#         write("Scheduler")        
-#         pass
 
 
 @app.route('/accesslist')
@@ -344,8 +315,8 @@ def allaccesslist():
                 , 'url_port' : objAccess['urlaccess']
                 , 'limited_date' : objAccess['limited_date']
                 , 'reason' : objAccess['reason']
-                , 'from_date' : objAccess['limited_date']
-                , 'end_date' : objAccess['initial_date']
+                , 'from_date' : objAccess['from_date']
+                , 'end_date' : objAccess['end_date']
             }
             responseData.append(values)
         
@@ -356,7 +327,6 @@ def allaccesslist():
         jsReponse = json.dumps('None')
         resp = Response(jsReponse, status = 404, mimetype = 'application/json')
         return (resp)  
-
 
 @app.route('/create', methods=['GET', 'POST'])
 @login_required
@@ -369,28 +339,6 @@ def create():
         access=request.form.to_dict()
         values=[current_user.username,access["urlaccess"],access["initial_date"],access["limited_date"],access["reason"]]
         change_db("INSERT INTO access (userid,urlaccess,initial_date,limited_date,reason) VALUES (?,?,?,?,?)",values)
-
-        ############ ENVIO DE CORREO ###################################################
-
-        
-        fromaddr = "iamtheadmin@root.com"
-        toaddr = "anthonyovalles@gmail.com"
-        msg = MIMEMultipart()
-        msg['From'] = fromaddr
-        msg['To'] = toaddr
-        msg['Subject'] = "Solicitud de acceso a servicio via SDN"
-        
-        body = "El usuario: @@@@ , solicito el acceso para: Acceder al switch desde el 2018/06/13 XX:XX:XX hasta el 2018/06/13 XX:XX:XX "
-        msg.attach(MIMEText(body, 'plain'))
-        
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(toaddr, "bayovanex0705")
-        text = msg.as_string()
-        server.sendmail(fromaddr, toaddr, text)
-        server.quit()
-        ###############################################################################
-
 
 
         # user=request.form.to_dict()
@@ -475,57 +423,37 @@ def deactivate(id):
         return redirect(url_for("adminpanel"))
 
 @app.route('/approverequest/<int:id>')
-def approverequest(id):    
-        # UPDATE para Aprobacion de Solicitud
+def approverequest(id):
+    # UPDATE para Aprobacion de Solicitud
     change_db("UPDATE access SET approve=1 WHERE ID=?",[id])
-
+    
     # Proceso de Notificacion de Controlador
     # Definicion de Headers
     headers = {'Content-type': 'application/json'}
-    
     # Solicitud a Enviar al Controlador
     access_list = query_db("SELECT * FROM access WHERE ID=?", [id])
     
-    ########Configuracion de Servidor Controller
+    ########TODOo Configuracion de Servidor Controller
     ########Incluir un CRU (Create, Read and Update)
-    ctrlServerName = query_db("SELECT * FROM controller_config WHERE id = ?", [1])
-
+    ctrlServerName = 'maincontroller'
+    
     # Variable Auxiliar del DATA del Objeto JSON
     responseData = []
     
     for objAccess in access_list:
-        o_port = ctrlServerName[0]['output_port']
-        d_port = ctrlServerName[0]['default_port']
         values = {'username' : objAccess['userid']
             , 'url_port' : objAccess['urlaccess']
+            , 'output_port' : '8080' #ctrlServerName['output_port']
+            , 'initial_date' : objAccess['initial_date']
             , 'limited_date' : objAccess['limited_date']
-            , 'o_port' : o_port
-            , 'd_port' : d_port
-            , 'from_date' : objAccess['initial_date']
-            , 'end_date' : objAccess['limited_date']
         }
         responseData.append(values)
     
     # Formato JSON
     jsReponse = json.dumps(responseData)
     
-    # URL de Notificacion al Controlador
-    server_ip = ctrlServerName[0]['server_ip']
-    sdnController = 'http://'+ server_ip +':6633/stats/flowentry/add'
-
-    # Respuesta de Hacer POST
-    #response = requests.post(sdnController, data=jsReponse, headers=headers)
-
-    # Imprimir Respuesta
-    #print (response)
-
-    # Mostrar resultados JSON
-    resp = Response(jsReponse, status = 200, mimetype = 'application/json')
-    return (resp)
-
-    # De Regreso a DASHBOARD
-    #return redirect(url_for("accesslist"))
-    #return response
+    return redirect(url_for("accesslist"))
+    
 
 @app.route('/rejectrequest/<int:id>')
 def rejectrequest(id):
